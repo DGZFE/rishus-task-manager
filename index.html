@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List By DG8AB</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="apple-touch-icon" href="touch-icon-iphone.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="touch-icon-ipad.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="touch-icon-iphone-retina.png">
+    <audio id="rewardSound" src="https://pixabay.com/sound-effects/toot-toot-sound-effect-1/"></audio>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List by DG8AB</h1>
+        <input type="text" id="taskInput" placeholder="Add a new task">
+        <input type="text" id="rewardInput" placeholder="Add a reward">
+        <button onclick="addTask()">Add</button>
+        <ul id="taskList"></ul>
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script>
+        function addTask() {
+            var taskInput = document.getElementById("taskInput");
+            var rewardInput = document.getElementById("rewardInput");
+            var taskList = document.getElementById("taskList");
+
+            if (taskInput.value !== "" && rewardInput.value !== "") {
+                var li = document.createElement("li");
+                li.innerHTML = taskInput.value + " - Reward: <span class='reward'>" + rewardInput.value + "</span>";
+                li.onclick = function() {
+                    var rewardSound = document.getElementById("rewardSound");
+                    rewardSound.play();
+                    var reward = this.querySelector('.reward').textContent;
+                    showNotification("You got: " + reward);
+                    taskList.removeChild(li);
+                    setCookie("taskList", JSON.stringify(tasks), 7);
+                }
+                taskList.appendChild(li);
+                tasks.push({task: taskInput.value, reward: rewardInput.value});
+                taskInput.value = "";
+                rewardInput.value = "";
+                setCookie("taskList", JSON.stringify(tasks), 7);
+            }
+        }
+
+        function showNotification(message) {
+            var notification = document.getElementById("notification");
+            notification.textContent = message;
+            notification.classList.add("show");
+            setTimeout(function() {
+                notification.classList.remove("show");
+            }, 3000);
+        }
+
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        window.onload = function() {
+            var storedTasks = getCookie("taskList");
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
+                tasks.forEach(function(task) {
+                    var taskList = document.getElementById("taskList");
+                    var li = document.createElement("li");
+                    li.innerHTML = task.task + " - Reward: <span class='reward'>" + task.reward + "</span>";
+                    li.onclick = function() {
+                        var rewardSound = document.getElementById("rewardSound");
+                        rewardSound.play();
+                        var reward = this.querySelector('.reward').textContent;
+                        showNotification("You got: " + reward);
+                        taskList.removeChild(li);
+                        tasks = tasks.filter(t => t.task !== task.task);
+                        setCookie("taskList", JSON.stringify(tasks), 7);
+                    }
+                    taskList.appendChild(li);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
